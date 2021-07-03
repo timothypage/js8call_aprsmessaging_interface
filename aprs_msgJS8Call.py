@@ -32,7 +32,7 @@ MSG_WARN='WARN'
 
      
 class UserInterface:
-    mycall="M0IAX"
+    mycall="N0TZW"
     first=True
     addr = ('127.0.0.1',65500)
     getResponse=False
@@ -47,6 +47,9 @@ class UserInterface:
             messagebox.showinfo("Information",messageString)
             
     def sendMessageToJS8Call(self, messageType, messageString):
+        print(messageString)
+        return True
+
         if self.checkJS8CallRunning()==False:
             self.showMessage(MSG_ERROR, "JS8Call is not runnung. Please run it before clicking the button,")
             return False
@@ -71,11 +74,13 @@ class UserInterface:
             mode = "SMSGTE"
         elif self.combo.get()=="APRS":
             mode=self.combo.get()
+        elif self.combo.get()=="APRS2SOTA":
+            mode=self.combo.get()
            
         mode = mode.ljust(9)
        # print(mode)
-        if self.tocall.get()=="":
-            return "Error, no email address is set"
+        # if self.tocall.get()=="":
+        #     return "Error, no email address is set"
         
         text=self.st.get('1.0', 'end-1c')  # Get all text in widget.
     
@@ -91,6 +96,10 @@ class UserInterface:
             tocallsign=self.tocall.get()
             tocallsign=tocallsign.ljust(9)
             message = "@APRSIS CMD :"+tocallsign+":"+text+"{"+number+"}"
+        elif self.combo.get()=="APRS2SOTA":
+            #  G0LGS-2>APRS,WIDE2-1*::SOTA     :ON/ON-010 144.320 SSB ON/G0LGS/P Calling now{003
+            message = "@APRSIS CMD :"+mode+":"+self.summit.get()+" "+self.freq.get()+" "+self.radio_mode.get()+" "+self.mycall+" "+text+"{"+number+"}"
+
         else: 
             message = "@APRSIS CMD :"+mode+":@"+self.tocall.get()+" "+text+"{"+number+"}"
         
@@ -149,6 +158,8 @@ class UserInterface:
             self.callLbl.config(text='Enter Email Address to send to')
         elif mode=="SMS":
             self.callLbl.config(text='Enter cell phone number')
+        elif mode=="APRS2SOTA":
+            self.callLbl.config(text='Enter summit')
             
     def __init__(self):
         
@@ -156,15 +167,15 @@ class UserInterface:
  
         self.window.title("APRS Messaging for JS8Call")
  
-        self.window.geometry('350x200+300+300')
+        # self.window.geometry('550x500')
  
         self.combo = Combobox(self.window, state='readonly')
         
         self.combo.bind('<<ComboboxSelected>>', self.comboChange)    
     
-        self.combo['values']= ("Email", "SMS", "APRS")
+        self.combo['values']= ("Email", "SMS", "APRS", "APRS2SOTA")
  
-        self.combo.current(0) #set the selected item
+        self.combo.current(3) #set the selected item
  
         self.combo.grid(column=0, row=0,columnspan=2)
  
@@ -189,30 +200,50 @@ class UserInterface:
  
         self.tocall.grid(column=0, row=4, columnspan=2)
 
+        self.summitLabel = Label(self.window, text="Enter Summit", justify="left")
+        self.summitLabel.grid(column=0, row=5, columnspan=2);
+
+        self.summit = Entry(self.window, width=30)
+        self.summit.grid(column=0, row=6, columnspan=2)
+
+        self.freqLabel = Label(self.window, text="Frequency (MHz)", justify="left")
+        self.freqLabel.grid(column=0, row=7, columnspan=2)
+
+        self.freq = Entry(self.window, width=30)
+        self.freq.grid(column=0, row=8, columnspan=2)
+
+        self.radio_modeLabel = Label(self.window, text="Mode", justify="left")
+        self.radio_modeLabel.grid(column=0, row=9, columnspan=2)
+
+        self.radio_mode = Combobox(self.window)
+        self.radio_mode['values'] = ("FM", "SSB", "CW", "DATA")
+        self.radio_mode.current(1)
+        self.radio_mode.grid(column=0, row=10, columnspan=2)
+
         self.msgLabel = Label(self.window, text="Message Text", justify="left")
  
-        self.msgLabel.grid(column=0, row=5,columnspan=2)
+        self.msgLabel.grid(column=0, row=11,columnspan=2)
  
         self.st = ScrolledText(self.window, height=5, width=40)
-        self.st.grid(row=6, column=0,columnspan=2)
+        self.st.grid(row=12, column=0,columnspan=2)
 
         self.btn = Button(self.window, text="Set JS8Call Text", command=self.setMessage)
  
-        self.btn.grid(column=0, row=9)
+        self.btn.grid(column=0, row=13)
 
         self.btn2 = Button(self.window, text="TX With JS8Call", command=self.txMessage)
 
-        self.btn2.grid(column=1, row=9)
+        self.btn2.grid(column=1, row=13)
 
         self.note1label = Label(self.window, text="Click Set JS8Call text to set the message text in JS8Call", justify="center", wraplength=300)
  
-        self.note1label.grid(column=0, row=10,columnspan=2)
+        self.note1label.grid(column=0, row=15,columnspan=2)
  
         self.note1label = Label(self.window, text="Click TX with JS8Call to set the message text in JS8Call and start transmitting", justify="center", wraplength=300)
  
-        self.note1label.grid(column=0, row=11,columnspan=2)
+        self.note1label.grid(column=0, row=16,columnspan=2)
  
-        self.window.geometry("350x350+300+300")
+        self.window.geometry("400x500")
         self.window.mainloop()
     
 ui = UserInterface()
